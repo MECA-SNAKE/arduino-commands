@@ -52,8 +52,8 @@
       border-radius: 3px;
       position: relative;
       left: 50%;
-      top: -186px;
-      transform: translateX(-50%);
+      top: 40%;
+      transform: translateX(-40%);
     }
     
     
@@ -70,6 +70,10 @@
     
     .arrow:hover {
       background-color: #ccc;
+    }
+
+    .btnstop:hover {
+        background-color: #f46f6f;
     }
     
     .left-arrow:before {
@@ -106,9 +110,5 @@
       border-left: 10px solid transparent;
       border-right: 10px solid transparent;
       border-top: 10px solid black;
-    }
-    
-    #stopBtn:hover {
-      background-color: #ccc;
     }
     

@@ -1,13 +1,13 @@
 const forwardBtn = document.getElementById('forwardBtn');
-const backwardBtn = document.getElementById('backwardBtn');
+// const backwardBtn = document.getElementById('backwardBtn');
 const stopBtn = document.getElementById('stopBtn');
 const rightBtn = document.getElementById('right-button');
 const leftBtn = document.getElementById('left-button');
 
-const ESP8266_IP = '172.20.10.10';
+const SNAKE_IP = 'enter IP address here';
 
 function sendRequest(path) {
-  fetch(`http://${ESP8266_IP}/${path}`)
+  fetch(`http://${SNAKE_IP}/${path}`)
     .then(response => {
       if (response.status === 200) {
         console.log(`Request successful: ${path}`);
@@ -18,33 +18,33 @@ function sendRequest(path) {
     .catch(err => console.error(`Error sending request: ${err}`));
 }
 
-function sendMotorSpeedRequest(speed) {
-  const percent = Math.round(speed / 100 * 255);
-  sendRequest(`speed?percent=${percent}`);
-  speedOutput.innerHTML = `${speed}%`;
-}
+// function sendMotorSpeedRequest(speed) {
+//   const percent = Math.round(speed / 100 * 255);
+//   sendRequest(`speed?percent=${percent}`);
+//   speedOutput.innerHTML = `${speed}%`;
+// }
 
 forwardBtn.addEventListener('click', () => {
   sendRequest('/forward');
-  console.log("hola");
+  console.log("going forward");
 });
 
-backwardBtn.addEventListener('click', () => {
-  sendRequest('/backward');
-  console.log("hola");
-});
+// backwardBtn.addEventListener('click', () => {
+//   sendRequest('/backward');
+//   console.log("hola");
+// });
 
 rightBtn.addEventListener('click', () => {
   sendRequest('/right');
-  console.log("hola");
+  console.log("Going right");
 });
 
 leftBtn.addEventListener('click', () => {
   sendRequest('/left');
-  console.log("hola");
+  console.log("Going Left");
 });
 
 stopBtn.addEventListener('click', () => {
   sendRequest('/stop');
-  console.log("hola");
+  console.log("Stopping");
 });
