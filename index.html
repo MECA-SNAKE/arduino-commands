@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <title>SNAKE CONTROL</title>
+</head>
+
+<body>
+
+  <div class="snake">
+  <h1 class="text-center">Kaa Control</h1>
+
+  <div class="controls">
+    <div class="arrow left-arrow" id="left-button"></div>
+    <div class="arrow up-arrow" id="forwardBtn"></div>
+    <div class="arrow right-arrow" id="right-button"></div>
+    <!-- <div class="arrow down-arrow" id="backwardBtn"></div> -->
+  </div>
+
+    <div class="btnstop">
+      <button type="button" class="btn btn-danger" id="stopBtn" >Stop</button>
+    </div>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    });
+
+    var script = document.createElement("script");
+    script.src = "app.js";
+    document.body.appendChild(script);
+
+    window.addEventListener('load', function() {
+  if (location.pathname === '/') {
+
+  }
+});
+</script>
+</body>
+
+</html>

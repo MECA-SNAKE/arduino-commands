@@ -1,0 +1,114 @@
+.snake {
+    text-align: center;
+    }
+    
+     #left-button {
+      margin-top: 167px;
+      margin-right: 47px;
+      width: 94px;
+      height: 94px;
+     }
+    
+     #right-button {
+      margin-top: 167px;
+      margin-right: 23px;
+      width: 94px;
+      height: 94px;
+     }
+    
+     #forwardBtn {
+      margin-top: -26px;
+      margin-left: -38px;
+      width: 94px;
+      height: 94px;
+     }
+    
+     /* #backwardBtn {
+      margin-top: 15px;
+      margin-right: 19px;
+      width: 94px;
+      height: 94px;
+     } */
+    
+    .controls {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .btnstop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: red;
+      margin-left: -12px;
+      margin-bottom: 64px;
+      margin-top: 9px;
+      width: 62px;
+      height: 42px;
+      border-radius: 3px;
+      position: relative;
+      left: 50%;
+      top: -186px;
+      transform: translateX(-50%);
+    }
+    
+    
+    .arrow {
+      width: 50px;
+      height: 50px;
+      border: 2px solid black;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .arrow:hover {
+      background-color: #ccc;
+    }
+    
+    .left-arrow:before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-right: 10px solid black;
+    }
+    
+    .up-arrow:before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid black;
+    }
+    
+    .right-arrow:before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 10px solid black;
+    }
+    
+    .down-arrow:before {
+      content: "";
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid black;
+    }
+    
+    #stopBtn:hover {
+      background-color: #ccc;
+    }
+    
