@@ -55,6 +55,18 @@
       border-radius: 10px;
     }
 
+    #ondMov:hover {
+      background-color: #ccc;
+      cursor: pointer;
+
+    }
+
+    #concMov:hover {
+      background-color: #ccc;
+      cursor: pointer;
+
+    }
+
     #stopBtn.btn.btn-light{
     cursor: pointer;
      background-color: transparent;
