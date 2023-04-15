@@ -23,13 +23,6 @@
       height: 94px;
      }
     
-     /* #backwardBtn {
-      margin-top: 15px;
-      margin-right: 19px;
-      width: 94px;
-      height: 94px;
-     } */
-    
     .controls {
       display: flex;
       justify-content: space-around;
@@ -38,13 +31,48 @@
       max-width: 400px;
       margin: 0 auto;
     }
+
+    .movements {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #concMov{
+      background-color:aquamarine;
+      width: 90px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    #ondMov{
+      background-color: aquamarine;
+      width: 90px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    #stopBtn.btn.btn-light{
+    cursor: pointer;
+     background-color: transparent;
+     border: 0px;
+    }
+
+    #stopBtn.btn.btn-light{
+   
+     font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+     font-size: 17px;
+    }
     
     .btnstop {
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: red;
-      margin-left: -12px;
+      margin-left: -40px;
       margin-bottom: 64px;
       margin-top: 9px;
       width: 62px;
@@ -53,7 +81,12 @@
       position: relative;
       left: 50%;
       top: 40%;
-      transform: translateX(-40%);
+      cursor: pointer;
+      transition: 0.6s;
+    }
+    .btnstop:hover {
+     background-color:  rgba(217, 51, 51, 0.5);
+     transform: scale(1.1, 1.1);
     }
     
     
@@ -72,8 +105,8 @@
       background-color: #ccc;
     }
 
-    .btnstop:hover {
-        background-color: #f46f6f;
+    .btnstop :hover {
+        background-color:  rgba(197, 124, 124, 0.5);
     }
     
     .left-arrow:before {

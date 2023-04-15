@@ -3,6 +3,9 @@ const forwardBtn = document.getElementById('forwardBtn');
 const stopBtn = document.getElementById('stopBtn');
 const rightBtn = document.getElementById('right-button');
 const leftBtn = document.getElementById('left-button');
+const concertinaBtn = document.getElementById('concMov');
+const ondulatedBtn = document.getElementById('ondMov');
+
 
 const SNAKE_IP = 'enter IP address here';
 
@@ -18,21 +21,10 @@ function sendRequest(path) {
     .catch(err => console.error(`Error sending request: ${err}`));
 }
 
-// function sendMotorSpeedRequest(speed) {
-//   const percent = Math.round(speed / 100 * 255);
-//   sendRequest(`speed?percent=${percent}`);
-//   speedOutput.innerHTML = `${speed}%`;
-// }
-
 forwardBtn.addEventListener('click', () => {
   sendRequest('/forward');
   console.log("going forward");
 });
-
-// backwardBtn.addEventListener('click', () => {
-//   sendRequest('/backward');
-//   console.log("hola");
-// });
 
 rightBtn.addEventListener('click', () => {
   sendRequest('/right');
@@ -48,3 +40,14 @@ stopBtn.addEventListener('click', () => {
   sendRequest('/stop');
   console.log("Stopping");
 });
+
+concertinaBtn.addEventListener('click', () => {
+  sendRequest('/concertina');
+  console.log("Concertina Movement");
+})
+
+ondulatedBtn.addEventListener('click', () => {
+  sendRequest('/ondulated');
+  console.log("Ondulated Movement");
+})
+
