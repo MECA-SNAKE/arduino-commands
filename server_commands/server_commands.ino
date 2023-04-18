@@ -6,6 +6,16 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <WiFiServer.h>
+
+const char* ssid = "wifi name";
+const char* password = "password";
+
+WiFiClient client;
+WiFiServer server(80);
+
 // -------------------------------------------------------------------------------------
 // DEFINES
 // -------------------------------------------------------------------------------------
@@ -17,6 +27,8 @@
 #define HEX_CHANNEL 0x40
 
 #define N_SAMPLES 20 // for initialization
+
+
 
 // -------------------------------------------------------------------------------------
 // TYPEDEF
@@ -113,13 +125,30 @@ void undulated_motion() {
 // SETUP FUNCTION
 // -------------------------------------------------------------------------------------
 void setup() {
+  Serial.begin(115200);
+
+    WiFi.begin(ssid, password);
+    Serial.print("Connecting to Wifi...");
+    Serial.print("\n");
+
+    while (WiFi.status() != WL_CONNECTED) {
+      Serial.print(WiFi.status());
+      delay(1000);
+      Serial.print(".");
+    }
+
+    Serial.println("");
+    Serial.println("Wifi connected");
+    Serial.println();
+    Serial.println(WiFi.localIP());
+
+    server.begin();
 
   for(int i = 0; i < N_SERVOS; ++i) {
     min_pulse_width[i] = MIN_PULSE_WIDTH;
     max_pulse_width[i] = MAX_PULSE_WIDTH;
   }
 
-  Serial.begin(115200);
   Serial.println("");
   Serial.println("LETS GOO");
   Serial.println("Initialize System");
@@ -159,10 +188,36 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wifi disconnected");
+    WiFi.disconnect();
+    delay(1000);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(1000);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("Wifi reconnected");
+    server.begin();
+  }
+
+  if (client.connected()) {
+    if (client.available()) {
+      String request = client.readStringUntil('\r');
+      Serial.println(request);
+      client.flush();
+
+      if (request.indexOf("/forward") != -1) {
+        Serial.println("Moving forward");
+        inchworm_motion();
+        }
+      }
 }
 
 
-
+}
 
 
 
