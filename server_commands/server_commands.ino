@@ -21,65 +21,67 @@
 // -------------------------------------------------------------------------------------
 // TYPEDEF
 // -------------------------------------------------------------------------------------
-typedef Adafruit_PWMServoDriver Driver
+typedef Adafruit_PWMServoDriver Driver;
 
 // -------------------------------------------------------------------------------------
 // PARAMETERS
 // -------------------------------------------------------------------------------------
-int min_pulse_width[N_SERVOS] = {MIN_PULSE_WIDTH};
-int max_pulse_width[N_SERVOS] = {MAX_PULSE_WIDTH};
-//int midpoint_pulse_width[N_SERVOS] = {0};
+int min_pulse_width[N_SERVOS];
+int max_pulse_width[N_SERVOS];
 
 Driver driver = Driver(HEX_CHANNEL);
+
+int RUNNING = 0;
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
 // -------------------------------------------------------------------------------------
 
 // This function finds the correct minimum and maximum pulse width for extremas for each servo
-void min_max_pulse_width(int servo, int min_value, int max_value) {
+void min_max_pulse_width(int servo, int* min_value, int* max_value) {
+  /**
+  int pulse_wide = map(0, 0, 180, min_value[servo], max_value[servo]);
+  driver.setPWM(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send minimum pulse value according to datasheet
 
-  pulse_wide = map(0, 0, 180, min_value, max_value);
-  driver.setPMW(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send minimum pulse value according to datasheet
-
-  Serial.println(map(driver.getPMW(servo), 0, 4095, min_value, max_value)); // expect 800
+  Serial.println(map(driver.getPWM(servo), 0, 4095, min_value[servo], max_value[servo])); // expect 800
   delay(1000);
 
-  pulse_wide = map(180, 0, 180, min_value, max_value);
-  driver.setPMW(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send maximum pulse value according to datasheet
+  pulse_wide = map(180, 0, 180, min_value[servo], max_value[servo]);
+  driver.setPWM(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send maximum pulse value according to datasheet
 
-  Serial.println(map(driver.getPMW(servo), 0, 4095, min_value, max_value)); // expect 2200
+  Serial.println(map(driver.getPWM(servo), 0, 4095, min_value[servo], max_value[servo])); // expect 2200
   delay(1000);
+  **/
 }
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
 // This function rotates a specific servo of an certain angle
-int rotate_with_min_max(int angle, int* min_array, int* max_array) {
+int rotate_with_min_max(int servo, float angle, int* min_array, int* max_array) {
 
-  int pulse_wide, analog_value = 0;
+  int pulse_wide = map(angle, 0, 180, min_array[servo], max_array[servo]);
 
-  pulse_wide = map(angle, 0, 180, min_array[servo], max_array[servo]);
-
-  analog_value = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
-  return analog_value;
+  int al = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
+  Serial.print("ANALOG VALUE (0-4095): ");
+  Serial.println(al);
+  return al;
 }
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
 // This function rotates a specific servo of an certain angle (simpler)
-void rotate(int servo, int angle) {
-  driver.setPMW(servo, 0, rotate_with_min_max(angle, &min_pulse_width, &max_pulse_width));
+void rotate(int servo, float angle) {
+  int value = driver.setPWM(servo, 0, rotate_with_min_max(servo, angle, min_pulse_width, max_pulse_width));
 }
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
-// This function activates the inchworm's motion
+// This function activates the inchworm's motion (ASSUME 3 SERVOS)
 void inchworm_motion() {
-
+  
 }
 
 // -------------------------------------------------------------------------------------
@@ -112,21 +114,28 @@ void undulated_motion() {
 // -------------------------------------------------------------------------------------
 void setup() {
 
-  Serial.begin() // put nbr for esp
-  Serial.println(F("Initialize System"));
+  for(int i = 0; i < N_SERVOS; ++i) {
+    min_pulse_width[i] = MIN_PULSE_WIDTH;
+    max_pulse_width[i] = MAX_PULSE_WIDTH;
+  }
+
+  Serial.begin(115200);
+  Serial.println("");
+  Serial.println("LETS GOO");
+  Serial.println("Initialize System");
 
   driver.begin();
   driver.wakeup();
-  driver.setPMWFreq(FREQUENCY_SERVO); // which frequency of our servos -> need to look datasheet
+  driver.setPWMFreq(FREQUENCY_SERVO); // which frequency of our servos -> need to look datasheet
   
   // Calculate the min and max pulse width for each servos
   for(int i = 0; i < N_SERVOS; ++i) {
-    min_max_pulse_width(i, &min_pulse_width[i], &max_pulse_width[i]);
+    min_max_pulse_width(i, min_pulse_width, max_pulse_width);
   }
 
   // Print the calibrated values
   Serial.println("Minimum and maximum pulse widths:");
-  for (int i = 0; i < N_SERVOS; ++i {
+  for (int i = 0; i < N_SERVOS; ++i) {
     Serial.print("Servo ");
     Serial.print(i);
     Serial.print(": ");
@@ -138,7 +147,7 @@ void setup() {
 
   // Initialize all servo at their midpoint
   for(int i = 0; i < N_SERVOS; ++i) {
-    //rotate(i, 90);
+    rotate(i, 180);
   }
 
   // enable the right pins
