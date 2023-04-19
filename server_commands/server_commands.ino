@@ -21,8 +21,8 @@ WiFiServer server(80);
 // DEFINES
 // -------------------------------------------------------------------------------------
 #define MIN_PULSE_WIDTH 800 // found on datasheet 
-#define MAX_PULSE_WIDTH 2200 // found on datasheet
-#define FREQUENCY_SERVO 50 // NEED TO CHECK ON DATASHEET OF SERVO (BUT NO DATASHEET BORDEL)
+#define MAX_PULSE_WIDTH 2000 // found on datasheet
+#define FREQUENCY_SERVO 50
 
 #define N_SERVOS 3
 #define HEX_CHANNEL 0x40
@@ -70,7 +70,7 @@ void min_max_pulse_width(int servo, int* min_value, int* max_value) {
 // This function rotates a specific servo of an certain angle
 int rotate_with_min_max(int servo, float angle, int* min_array, int* max_array) {
 
-  int pulse_wide = map(angle, 0, 180, 800, 2200);
+  int pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 
   int al = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
   Serial.print("ANALOG VALUE (0-4095): ");
@@ -172,12 +172,26 @@ void setup() {
   }
 
   // Initialize all servo at their midpoint
-  for(int i = 0; i < N_SERVOS; ++i) {
-    for(int j = 1; j <= 90; j++) {
-      rotate(i, 90 + j);
-      delay(10);
-    }
+  for(int i = 0; i < N_SERVOS; i++) {
+    delay(1000);
+    rotate(i, 90);
   }
+
+
+  delay(1000);
+  for(int i = 0; i < 360; i++){
+    for(int j = 0; j < N_SERVOS; j++){  
+      rotate(j, 90 + 30 * sin(3 * i + j * 2 * 3.14159 / (N_SERVOS - 1)));
+    }
+    delay(10);
+  }
+
+
+ /*
+  for(int i = 0; i < N_SERVOS; ++i) {
+    delay(2000);
+    rotate(i, 180);
+  }*/
 
   // enable the right pins
 
@@ -188,6 +202,9 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
+
+
+
 /*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
