@@ -12,9 +12,10 @@
 
 const char* ssid = "wifi name";
 const char* password = "password";
-
+/*
 WiFiClient client;
 WiFiServer server(80);
+*/
 
 // -------------------------------------------------------------------------------------
 // DEFINES
@@ -25,9 +26,6 @@ WiFiServer server(80);
 
 #define N_SERVOS 3
 #define HEX_CHANNEL 0x40
-
-#define N_SAMPLES 20 // for initialization
-
 
 
 // -------------------------------------------------------------------------------------
@@ -72,7 +70,7 @@ void min_max_pulse_width(int servo, int* min_value, int* max_value) {
 // This function rotates a specific servo of an certain angle
 int rotate_with_min_max(int servo, float angle, int* min_array, int* max_array) {
 
-  int pulse_wide = map(angle, 0, 180, min_array[servo], max_array[servo]);
+  int pulse_wide = map(angle, 0, 180, 800, 2200);
 
   int al = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
   Serial.print("ANALOG VALUE (0-4095): ");
@@ -126,31 +124,30 @@ void undulated_motion() {
 // -------------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
+/*
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to Wifi...");
+  Serial.print("\n");
 
-    WiFi.begin(ssid, password);
-    Serial.print("Connecting to Wifi...");
-    Serial.print("\n");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(WiFi.status());
+    delay(1000);
+    Serial.print(".");
+  }
 
-    while (WiFi.status() != WL_CONNECTED) {
-      Serial.print(WiFi.status());
-      delay(1000);
-      Serial.print(".");
-    }
+  Serial.println("");
+  Serial.println("Wifi connected");
+  Serial.println();
+  Serial.println(WiFi.localIP());
 
-    Serial.println("");
-    Serial.println("Wifi connected");
-    Serial.println();
-    Serial.println(WiFi.localIP());
-
-    server.begin();
-
+  server.begin();
+*/
   for(int i = 0; i < N_SERVOS; ++i) {
     min_pulse_width[i] = MIN_PULSE_WIDTH;
     max_pulse_width[i] = MAX_PULSE_WIDTH;
   }
 
   Serial.println("");
-  Serial.println("LETS GOO");
   Serial.println("Initialize System");
 
   driver.begin();
@@ -176,7 +173,10 @@ void setup() {
 
   // Initialize all servo at their midpoint
   for(int i = 0; i < N_SERVOS; ++i) {
-    rotate(i, 180);
+    for(int j = 1; j <= 90; j++) {
+      rotate(i, 90 + j);
+      delay(10);
+    }
   }
 
   // enable the right pins
@@ -188,7 +188,7 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
-
+/*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
     WiFi.disconnect();
@@ -214,8 +214,8 @@ void loop() {
         inchworm_motion();
         }
       }
-}
-
+  }
+*/
 
 }
 
