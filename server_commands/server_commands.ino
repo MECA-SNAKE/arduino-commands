@@ -77,7 +77,7 @@ void rotate(int servo, float angle) {
 void inchworm_motion() {
 
   for(int phi = 0; phi <45; ++phi){
-    rotate(0, 90+phi);
+    rotate(0, 90-phi);
     rotate(1, 90-phi);
     rotate(2, 90+phi);
 
@@ -98,7 +98,7 @@ void inchworm_motion() {
     rotate(4, 45+phi);
     rotate(5, 45+phi);
     rotate(6, 135-phi);
-  }
+  } 
 }
 
 // -------------------------------------------------------------------------------------
