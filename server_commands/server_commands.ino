@@ -22,6 +22,7 @@ WiFiServer server(80);
 // -------------------------------------------------------------------------------------
 #define MIN_PULSE_WIDTH 800 // found on datasheet 
 #define MAX_PULSE_WIDTH 2000 // found on datasheet
+#define MID_PULSE_WIDTH ((MIN_PULSE_WIDTH + MAX_PULSE_WIDTH) / 2)
 #define FREQUENCY_SERVO 50
 
 #define N_SERVOS 3
@@ -36,8 +37,8 @@ typedef Adafruit_PWMServoDriver Driver;
 // -------------------------------------------------------------------------------------
 // PARAMETERS
 // -------------------------------------------------------------------------------------
-int min_pulse_width[N_SERVOS];
-int max_pulse_width[N_SERVOS];
+//int min_pulse_width[N_SERVOS];
+//int max_pulse_width[N_SERVOS];
 
 Driver driver = Driver(HEX_CHANNEL);
 
@@ -47,28 +48,11 @@ int RUNNING = 0;
 // MAIN FUNCTIONS
 // -------------------------------------------------------------------------------------
 
-// This function finds the correct minimum and maximum pulse width for extremas for each servo
-void min_max_pulse_width(int servo, int* min_value, int* max_value) {
-  /**
-  int pulse_wide = map(0, 0, 180, min_value[servo], max_value[servo]);
-  driver.setPWM(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send minimum pulse value according to datasheet
-
-  Serial.println(map(driver.getPWM(servo), 0, 4095, min_value[servo], max_value[servo])); // expect 800
-  delay(1000);
-
-  pulse_wide = map(180, 0, 180, min_value[servo], max_value[servo]);
-  driver.setPWM(servo, 0, int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096)); // send maximum pulse value according to datasheet
-
-  Serial.println(map(driver.getPWM(servo), 0, 4095, min_value[servo], max_value[servo])); // expect 2200
-  delay(1000);
-  **/
-}
-
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
 // This function rotates a specific servo of an certain angle
-int rotate_with_min_max(int servo, float angle, int* min_array, int* max_array) {
+int rotate_with_min_max(int servo, float angle) {
 
   int pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 
@@ -83,7 +67,7 @@ int rotate_with_min_max(int servo, float angle, int* min_array, int* max_array) 
 
 // This function rotates a specific servo of an certain angle (simpler)
 void rotate(int servo, float angle) {
-  int value = driver.setPWM(servo, 0, rotate_with_min_max(servo, angle, min_pulse_width, max_pulse_width));
+  int value = driver.setPWM(servo, 0, rotate_with_min_max(servo, angle));
 }
 
 // -------------------------------------------------------------------------------------
@@ -142,10 +126,6 @@ void setup() {
 
   server.begin();
 */
-  for(int i = 0; i < N_SERVOS; ++i) {
-    min_pulse_width[i] = MIN_PULSE_WIDTH;
-    max_pulse_width[i] = MAX_PULSE_WIDTH;
-  }
 
   Serial.println("");
   Serial.println("Initialize System");
@@ -153,45 +133,14 @@ void setup() {
   driver.begin();
   driver.wakeup();
   driver.setPWMFreq(FREQUENCY_SERVO); // which frequency of our servos -> need to look datasheet
-  
-  // Calculate the min and max pulse width for each servos
-  for(int i = 0; i < N_SERVOS; ++i) {
-    min_max_pulse_width(i, min_pulse_width, max_pulse_width);
-  }
-
-  // Print the calibrated values
-  Serial.println("Minimum and maximum pulse widths:");
-  for (int i = 0; i < N_SERVOS; ++i) {
-    Serial.print("Servo ");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.print(min_pulse_width[i]);
-    Serial.print(" - ");
-    Serial.print(max_pulse_width[i]);
-    Serial.println(" microseconds");
-  }
 
   // Initialize all servo at their midpoint
   for(int i = 0; i < N_SERVOS; i++) {
-    delay(1000);
+    delay(100);
     rotate(i, 90);
   }
 
-
-  delay(1000);
-  for(int i = 0; i < 360; i++){
-    for(int j = 0; j < N_SERVOS; j++){  
-      rotate(j, 90 + 30 * sin(3 * i + j * 2 * 3.14159 / (N_SERVOS - 1)));
-    }
-    delay(10);
-  }
-
-
- /*
-  for(int i = 0; i < N_SERVOS; ++i) {
-    delay(2000);
-    rotate(i, 180);
-  }*/
+  
 
   // enable the right pins
 
