@@ -76,6 +76,7 @@ void rotate(int servo, float angle) {
 // This function activates the inchworm's motion (ASSUME 3 SERVOS)
 void inchworm_motion() {
 
+
   for(int phi = 0; phi <45; ++phi){
     rotate(0, 90-phi);
     rotate(1, 90-phi);
@@ -86,19 +87,31 @@ void inchworm_motion() {
 
   for(int i = 0; i<=4; ++i){
     for(int phi = 0; phi<45; ++phi){
-
-      rotate(i, 45+2*phi);
+      if(i>0){
+        rotate(i-1, 135-phi);
+      }
       rotate(i+1, 135-2*phi);
+      rotate(i, 45+2*phi);
+
       rotate(i+2, 135-2*phi);
       rotate(i+3, 90+phi);
+      delay(10);
     }
+    delay(1000);
   }
 
-  for(int phi = 0; phi <45; ++phi){
+ /* for(int phi = 0; phi <45; ++phi){
     rotate(4, 45+phi);
     rotate(5, 45+phi);
     rotate(6, 135-phi);
-  } 
+
+    delay(10);
+  }*/
+  for(int i =0;i<N_SERVOS; i++){
+    rotate(i, 90);
+    delay(10);
+  }
+  
 }
 
 // -------------------------------------------------------------------------------------
