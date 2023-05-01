@@ -25,7 +25,7 @@ WiFiServer server(80);
 #define MID_PULSE_WIDTH ((MIN_PULSE_WIDTH + MAX_PULSE_WIDTH) / 2)
 #define FREQUENCY_SERVO 50
 
-#define N_SERVOS 3
+#define N_SERVOS 6
 #define HEX_CHANNEL 0x40
 
 
@@ -135,7 +135,13 @@ void concertina_motion() {
 
 // This function activates the undulated motion of the snake
 void undulated_motion() {
-
+  for(int i = 0; i < 360; i++) {
+    for(int j = 0; j < N_SERVOS; j++) {
+      delay(30);
+      rotate(j, 90 + 55 * sin(2 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
+    }
+    delay(100);
+  }
 }
 
 
@@ -176,8 +182,6 @@ void setup() {
     rotate(i, 90);
   }
 
-  
-
   // enable the right pins
 
   // set the initial value of each pin
@@ -187,8 +191,6 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
-
-
 
 /*
   if (WiFi.status() != WL_CONNECTED) {
