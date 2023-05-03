@@ -151,8 +151,12 @@ void setup() {
   Serial.println();
   Serial.println(WiFi.localIP());
 
-  server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", "Hello from the ESP8266");
+  server.on("/mode", HTTP_POST, [](AsyncWebServerRequest *request){
+    //request->send_P(200, "text/html", "Hello from the ESP8266");
+  });
+
+  server.on("/motion", HTTP_POST, [](AsyncWebServerRequest *request){
+    //request->send_P(200, "text/html", "Hello from the ESP8266");
   });
 
   server.begin();
