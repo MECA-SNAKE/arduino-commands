@@ -17,7 +17,7 @@
 #define MAX_PULSE_WIDTH 2000 // found on datasheet
 #define FREQUENCY_SERVO 50
 
-#define N_SERVOS 6
+#define N_SERVOS 8
 #define HEX_CHANNEL 0x40
 
 // -------------------------------------------------------------------------------------
@@ -34,6 +34,8 @@ const char* ssid = "giogio_larue";
 const char* password = "21ff99a2c0cd";
 
 AsyncWebServer server(80);
+
+float rot = 0.0;
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
@@ -117,12 +119,14 @@ void concertina_motion() {
 void undulated_motion() {
   for(int i = 0; i < 360; i++) {
     for(int j = 0; j < N_SERVOS; j++) {
-      if(j < -1) {
-        delay(330);
+      delay(30);
+      if(j > N_SERVOS - 6) { // j > 2
+        rot = 90 + 50 * sin(3 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1));
       } else {
-        delay(30);
+        rot = 90 + 62 * sin(3 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1));
       }
-      rotate(j, 90 + 69 * sin(2 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
+      
+      rotate(j, rot);
     }
     delay(100);
   }
@@ -135,7 +139,7 @@ void undulated_motion() {
 void setup() {  
 
   Serial.begin(9600); 
-
+/*
   Serial.print("WIFI ...");
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wifi...");
@@ -152,7 +156,12 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   server.on("/mode", HTTP_POST, [](AsyncWebServerRequest *request){
-    //request->send_P(200, "text/html", "Hello from the ESP8266");
+    AsyncWebParameter* p = request->getParam(0); // 1: start / 0: stop
+    if(p->isPost()) {
+      Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+
+      request->send_P(200, "text/html", "post request for /mode success");
+    }
   });
 
   server.on("/motion", HTTP_POST, [](AsyncWebServerRequest *request){
@@ -160,7 +169,7 @@ void setup() {
   });
 
   server.begin();
-
+*/
   Serial.println("");
   Serial.println("Initialize System");
 
@@ -179,6 +188,8 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
+
+  undulated_motion();
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
