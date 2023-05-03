@@ -7,22 +7,8 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
-//#include <WiFiServer.h>
-
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-
-const char* ssid = "giogio_larue";
-const char* password = "21ff99a2c0cd";
-
-unsigned long lastTime = 0;
-unsigned long timerDelay = 5000;
-
-//WiFiClient client;
-//WiFiServer server(80);
-AsyncWebServer server(80);
 
 // -------------------------------------------------------------------------------------
 // DEFINES
@@ -44,6 +30,10 @@ typedef Adafruit_PWMServoDriver Driver;
 // -------------------------------------------------------------------------------------
 Driver driver = Driver(HEX_CHANNEL);
 
+const char* ssid = "giogio_larue";
+const char* password = "21ff99a2c0cd";
+
+AsyncWebServer server(80);
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
@@ -161,9 +151,6 @@ void setup() {
   Serial.println();
   Serial.println(WiFi.localIP());
 
-  //server.begin();
-
-  // Route for root / web page
   server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", "Hello from the ESP8266");
   });
@@ -200,74 +187,6 @@ void loop() {
     }
     Serial.println("");
     Serial.println("Wifi reconnected");
-    //server.begin();
+    server.begin();
   }
-
-  if ((millis() - lastTime) > timerDelay) {
-    if(WiFi.status() == WL_CONNECTED){
-
-      WiFiClient client;
-      HTTPClient http;
-
-      String serverPath = "http://192.168.34.121/mode";
-      
-      // Your Domain name with URL path or IP address with path
-      http.begin(client, serverPath.c_str());
-        
-      // Send HTTP GET request
-      int httpResponseCode = http.GET();
-      
-      if (httpResponseCode>0) {
-        Serial.print("HTTP Response code: ");
-        Serial.println(httpResponseCode);
-        String payload = http.getString();
-        Serial.println(payload);
-      }
-      else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
-      }
-      http.end();
-    }  
-
-    lastTime = millis();
-  }
-
-
-/*
-  client = server.available();
-
-  if(client) {
-    while(client.connected()) {
-      if(client.available()) {
-        String request = client.readStringUntil('\r');
-        Serial.println(request);
-        client.flush(); 
-
-        if(request.indexOf("GET /sensor") != -1) {
-          Serial.println("Want to get data from the sensor");
-          // ...
-        }
-        else if(request.indexOf("POST /mode") != -1) {
-          // Activate/Deactivate the snake
-        }
-        else if(request.indexOf("POST /motion") != -1) {
-          // Type of motion of the snake
-        }
-        else if(request.indexOf("POST /params") != -1) {
-          // Change the parameters of the motion
-        }
-        else {
-          client.println("HTTP/1.1 404 Not Found");
-          client.println("Content-Type: text/html");
-          client.println("Connection: close");
-        }
-      }
-    }
-
-    client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println("");
-  }
-  */
 }
