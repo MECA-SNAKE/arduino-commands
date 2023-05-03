@@ -7,27 +7,32 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
-#include <WiFiServer.h>
+//#include <WiFiServer.h>
 
-const char* ssid = "wifi name";
-const char* password = "password";
-/*
-WiFiClient client;
-WiFiServer server(80);
-*/
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+const char* ssid = "giogio_larue";
+const char* password = "21ff99a2c0cd";
+
+unsigned long lastTime = 0;
+unsigned long timerDelay = 5000;
+
+//WiFiClient client;
+//WiFiServer server(80);
+AsyncWebServer server(80);
 
 // -------------------------------------------------------------------------------------
 // DEFINES
 // -------------------------------------------------------------------------------------
 #define MIN_PULSE_WIDTH 800 // found on datasheet 
 #define MAX_PULSE_WIDTH 2000 // found on datasheet
-#define MID_PULSE_WIDTH ((MIN_PULSE_WIDTH + MAX_PULSE_WIDTH) / 2)
 #define FREQUENCY_SERVO 50
 
 #define N_SERVOS 6
 #define HEX_CHANNEL 0x40
-
 
 // -------------------------------------------------------------------------------------
 // TYPEDEF
@@ -37,12 +42,8 @@ typedef Adafruit_PWMServoDriver Driver;
 // -------------------------------------------------------------------------------------
 // PARAMETERS
 // -------------------------------------------------------------------------------------
-//int min_pulse_width[N_SERVOS];
-//int max_pulse_width[N_SERVOS];
-
 Driver driver = Driver(HEX_CHANNEL);
 
-int RUNNING = 0;
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
@@ -57,8 +58,6 @@ int rotate_with_min_max(int servo, float angle) {
   int pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 
   int al = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
-  Serial.print("ANALOG VALUE (0-4095): ");
-  Serial.println(al);
   return al;
 }
 
@@ -75,9 +74,7 @@ void rotate(int servo, float angle) {
 
 // This function activates the inchworm's motion (ASSUME 3 SERVOS)
 void inchworm_motion() {
-
-
-  for(int phi = 0; phi <45; ++phi){
+   for(int phi = 0; phi <90; ++phi){
     rotate(0, 90-phi);
     rotate(1, 90-phi);
     rotate(2, 90+phi);
@@ -86,32 +83,25 @@ void inchworm_motion() {
   }
 
   for(int i = 0; i<=4; ++i){
-    for(int phi = 0; phi<45; ++phi){
+    for(int phi = 0; phi<90; ++phi){
       if(i>0){
-        rotate(i-1, 135-phi);
+        rotate(i-1, 180-phi);
       }
-      rotate(i+1, 135-2*phi);
-      rotate(i, 45+2*phi);
 
-      rotate(i+2, 135-2*phi);
+      rotate(i, 2*phi);
+
+      rotate(i+2, 180-2*phi);
       rotate(i+3, 90+phi);
+
       delay(10);
     }
     delay(1000);
   }
 
- /* for(int phi = 0; phi <45; ++phi){
-    rotate(4, 45+phi);
-    rotate(5, 45+phi);
-    rotate(6, 135-phi);
-
-    delay(10);
-  }*/
   for(int i =0;i<N_SERVOS; i++){
     rotate(i, 90);
     delay(10);
   }
-  
 }
 
 // -------------------------------------------------------------------------------------
@@ -137,8 +127,12 @@ void concertina_motion() {
 void undulated_motion() {
   for(int i = 0; i < 360; i++) {
     for(int j = 0; j < N_SERVOS; j++) {
-      delay(30);
-      rotate(j, 90 + 55 * sin(2 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
+      if(j < -1) {
+        delay(330);
+      } else {
+        delay(30);
+      }
+      rotate(j, 90 + 69 * sin(2 * i + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
     }
     delay(100);
   }
@@ -148,17 +142,18 @@ void undulated_motion() {
 // -------------------------------------------------------------------------------------
 // SETUP FUNCTION
 // -------------------------------------------------------------------------------------
-void setup() {
-  Serial.begin(115200);
-/*
+void setup() {  
+
+  Serial.begin(9600); 
+
+  Serial.print("WIFI ...");
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wifi...");
   Serial.print("\n");
 
   while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(WiFi.status());
-    delay(1000);
     Serial.print(".");
+    delay(500);
   }
 
   Serial.println("");
@@ -166,8 +161,14 @@ void setup() {
   Serial.println();
   Serial.println(WiFi.localIP());
 
+  //server.begin();
+
+  // Route for root / web page
+  server.on("/mode", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", "Hello from the ESP8266");
+  });
+
   server.begin();
-*/
 
   Serial.println("");
   Serial.println("Initialize System");
@@ -181,10 +182,6 @@ void setup() {
     delay(100);
     rotate(i, 90);
   }
-
-  // enable the right pins
-
-  // set the initial value of each pin
 }
 
 // -------------------------------------------------------------------------------------
@@ -192,7 +189,6 @@ void setup() {
 // -------------------------------------------------------------------------------------
 void loop() {
 
-/*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
     WiFi.disconnect();
@@ -204,45 +200,74 @@ void loop() {
     }
     Serial.println("");
     Serial.println("Wifi reconnected");
-    server.begin();
+    //server.begin();
   }
 
-  if (client.connected()) {
-    if (client.available()) {
-      String request = client.readStringUntil('\r');
-      Serial.println(request);
-      client.flush();
+  if ((millis() - lastTime) > timerDelay) {
+    if(WiFi.status() == WL_CONNECTED){
 
-      if (request.indexOf("/forward") != -1) {
-        Serial.println("Moving forward");
-        inchworm_motion();
+      WiFiClient client;
+      HTTPClient http;
+
+      String serverPath = "http://192.168.34.121/mode";
+      
+      // Your Domain name with URL path or IP address with path
+      http.begin(client, serverPath.c_str());
+        
+      // Send HTTP GET request
+      int httpResponseCode = http.GET();
+      
+      if (httpResponseCode>0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        String payload = http.getString();
+        Serial.println(payload);
+      }
+      else {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+      }
+      http.end();
+    }  
+
+    lastTime = millis();
+  }
+
+
+/*
+  client = server.available();
+
+  if(client) {
+    while(client.connected()) {
+      if(client.available()) {
+        String request = client.readStringUntil('\r');
+        Serial.println(request);
+        client.flush(); 
+
+        if(request.indexOf("GET /sensor") != -1) {
+          Serial.println("Want to get data from the sensor");
+          // ...
+        }
+        else if(request.indexOf("POST /mode") != -1) {
+          // Activate/Deactivate the snake
+        }
+        else if(request.indexOf("POST /motion") != -1) {
+          // Type of motion of the snake
+        }
+        else if(request.indexOf("POST /params") != -1) {
+          // Change the parameters of the motion
+        }
+        else {
+          client.println("HTTP/1.1 404 Not Found");
+          client.println("Content-Type: text/html");
+          client.println("Connection: close");
         }
       }
+    }
+
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
   }
-*/
-
+  */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
