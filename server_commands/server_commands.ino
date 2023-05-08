@@ -24,11 +24,11 @@
 // TYPEDEF
 // -------------------------------------------------------------------------------------
 typedef Adafruit_PWMServoDriver Driver;
-
+/*
 typedef enum {
   UNDULATED, CONCERTINA, NONE;
 } MOTION;
-
+*/
 // -------------------------------------------------------------------------------------
 // PARAMETERS
 // -------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ const char* ssid = "giogio_larue";
 const char* password = "21ff99a2c0cd";
 
 AsyncWebServer server(80);
-
+/*
 int is_running = 0; 
 MOTION motion = MOTION.NONE;
 
@@ -46,7 +46,7 @@ double amplitude = 0.0;
 double offset = 0.0;
 double wavelength = 0.0;
 double frequency = 0.0; 
-
+*/
 double rot = 0.0;
 double angles[N_SERVOS - 2];
 
@@ -172,9 +172,9 @@ void undulated_motion_3() {
   for(int i = 0; i < 360; i++) {
     float brads = i * 3.1415 / 180.0;     //convert from degrees to radians
     for(int j=0; j<N_SERVOS; j++){  
-        if(is_running == 0) {
+       /* if(is_running == 0) {
           return;
-        }
+        }*/
         rotate(j, 90 + 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
     }
    delay(10);
@@ -204,7 +204,7 @@ void undulated_motion_4() {
    delay(10);
   }
 }
-
+/*
 void update_mode(int m) {
   if(m == 0 || m == 1) {
     is_running = m;
@@ -243,7 +243,7 @@ void reset() {
   wavelength = 2.0;
   amplitude = 50.0;
 }
-
+*/
 
 // -------------------------------------------------------------------------------------
 // SETUP FUNCTION
@@ -251,7 +251,7 @@ void reset() {
 void setup() {  
 
   Serial.begin(9600); 
-
+/*
   Serial.print("WIFI ...");
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wifi...");
@@ -266,7 +266,8 @@ void setup() {
   Serial.println("Wifi connected");
   Serial.println();
   Serial.println(WiFi.localIP());
-
+  */
+/*
   server.on("/mode", HTTP_POST, [](AsyncWebServerRequest *request){
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
@@ -302,7 +303,7 @@ void setup() {
   });
 
   server.begin();
-
+*/
   Serial.println("");
   Serial.println("Initialize System");
 
@@ -322,7 +323,7 @@ void setup() {
 void loop() {
 
   undulated_motion_4();
-
+/*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
     WiFi.disconnect();
@@ -360,7 +361,7 @@ void loop() {
   } else {
     reset();
   }
-  
+  */
 }
 
 
