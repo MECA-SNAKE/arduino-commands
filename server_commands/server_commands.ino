@@ -55,9 +55,6 @@ double offset = 0.0;
 double wavelength = 0.0;
 double frequency = 0.0; 
 
-double rot = 0.0;
-double angles[N_SERVOS - 2];
-
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
 // -------------------------------------------------------------------------------------
@@ -84,7 +81,7 @@ void rotate(int servo, double angle) {
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
-
+/*
 // This function activates the inchworm's motion
 void inchworm_motion() {
 
@@ -157,12 +154,55 @@ void inchworm_motion() {
     }
   }
 }
+*/
+// -------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------
 
-// -------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
+// NEED TO BE TESTED
+float g = 1.0;
+float temp = 0.0;
+float sum = 0.0;
+float factor = 0.0;
+float amp = 5.0;
+float ampf = 70.0;
+float st = 150.0;
+
+float test(float a, float a_f, float s) {
+    return pow(a_f / a, 1 / s);
+}    
 
 // This function activates the conertina motion of the snake
-void concertina_motion() {
+void concertina_motion_v1() {
+  g = 1.0;
+  factor = test(amp, ampf, st);
+
+  for(int i = 0; i < 150; i++) {
+    for(int j = 0; j < N_SERVOS - 2; j++) {
+      temp = g * amp * sin((1 * j * 2 * 3.1415) / (N_SERVOS - 3));
+      rotate(j, 90 + temp);
+      sum += temp;
+    }
+    delay(10);
+    rotate(N_SERVOS - 2, 90 - sum);
+    g *= factor;
+  } 
+
+  g = 1.0;
+  factor = test(ampf, amp, 50.0);
+
+  for(int i = 0; i < 50; i++) {
+    for(int j = 0; j < N_SERVOS - 2; j++) {
+      temp = g * ampf * sin((1 * j * 2 * 3.1415) / (N_SERVOS - 3));
+      rotate(j, 90 + temp);
+      sum += temp;
+    }
+    delay(10);
+    rotate(N_SERVOS - 2, 90 - sum);
+    g *= factor;
+  } 
+}
+
+void concertina_motion_v2() {
 
 }
 
@@ -172,7 +212,7 @@ void concertina_motion() {
 // This function sets the snake in a straight line
 void straight() {
   for(int i = 0; i < N_SERVOS; i++) {
-    delay(30);
+    delay(10);
     rotate(i, 90);
   }
 }
@@ -180,36 +220,41 @@ void straight() {
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
+double s = 0.0;
+double rot = 0.0;
+
 // TEST FUNCTION
-float forward_kinetics_2() {
-  float val = 0.0;
-  for(int i = 0; i < N_SERVOS - 2; i++) {
-    val += sin(angles[i]);
+void undulated_motion_kinetics_v1() {
+  for(int i = 0; i < 360; i++) {
+    for(int j = 0; j < N_SERVOS - 1; j++) { // n servo - 1
+      delay(30);
+      rot = 55 * sin(2 * 2 * 3.1415 * i + (2 * j * 2 * 3.1415) / (N_SERVOS - 2));
+      rotate(j, 90 + rot);
+      s += rot;
+    }
+    rotate(N_SERVOS - 1, 90 - sum);
+    s = 0.0;
   }
-  return 90.0 - asin(val);
 }
 
-// -------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
-
-// TEST FUNCTION
-void undulated_motion_kinetics() {
+void undulated_motion_kinetics_v2() {
   for(int i = 0; i < 360; i++) {
-    for(int j = 0; j < N_SERVOS; j++) { // n servo - 1
-      delay(30);
-      rot = 90 + 55 * sin(2 * 2 * 3.1415 * i + (2 * j * 2 * 3.1415) / (N_SERVOS - 1));
+    float brads = i * 3.1415 / 180.0; 
+    
+    for(int j = 0; j < N_SERVOS - 1; j++) { // n servo - 1
+      rot = 55 * sin(2 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS - 2));
       rotate(j, rot);
-      angles[j] = rot;
-      delay(10);
-      rotate(N_SERVOS - 1, forward_kinetics_2());
+      s += rot;
     }
+    rotate(N_SERVOS - 1, 90 - sum);
+    s = 0.0;
     delay(10);
   }
 }
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
-
+/*
 // This function activates the undulated motion of the snake
 void undulated_motion_3() {
   for(int i = 0; i < 360; i++) {
@@ -234,32 +279,6 @@ void undulated_motion_3() {
       } else {
         return;
       }
-    }
-
-   delay(10);
-  }
-}
-
-
-// NEED TO BE TESTED
-float l = 1.0;
-float factor = 0.0;
-
-float amplitude_factor(float ampl, float stop_ampl, float steps) {
-    return pow(ampl / stop_ampl, 1 / steps);
-}    
-
-void undulated_motion_4() {
-  l = 1.0;
-  factor = amplitude_factor(55, 35, N_SERVOS - 1);
-
-  for(int i = 0; i < 360; i++) {
-
-    float brads = i * 3.1415 / 180.0;
-
-    for(int j=0; j<N_SERVOS; j++){  
-        rotate(j, 90 + l * 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); // need to test with n and not n - 1 maybe for the period
-        l /= factor;
     }
 
    delay(10);
@@ -325,7 +344,7 @@ void reset() {
   amplitude = 50.0;
   straight();
 }
-
+*/
 
 // -------------------------------------------------------------------------------------
 // SETUP FUNCTION
@@ -333,7 +352,7 @@ void reset() {
 void setup() {  
 
   Serial.begin(9600); 
-
+/*
   Serial.print("WIFI ...");
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wifi...");
@@ -397,7 +416,7 @@ void setup() {
 
   server.begin();
   
-  
+  */
   Serial.println("");
   Serial.println("Initialize System");
 
@@ -415,7 +434,7 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
-
+/*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
     // SEND PACKET TO KNOW THE WIFI IS OFF ! WITH SOMETHING RED ON THE SCREEN
@@ -453,7 +472,7 @@ void loop() {
         break;    
     } 
   }
-
+*/
 }
 
 
