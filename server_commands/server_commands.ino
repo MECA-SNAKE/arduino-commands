@@ -7,8 +7,8 @@
 #include <Adafruit_PWMServoDriver.h>
 
 #include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+//#include <ESPAsyncTCP.h>
+//#include <ESPAsyncWebServer.h>
 
 // -------------------------------------------------------------------------------------
 // DEFINES
@@ -17,7 +17,7 @@
 #define MAX_PULSE_WIDTH 2000 // found on datasheet
 #define FREQUENCY_SERVO 50
 
-#define N_SERVOS 8
+#define N_SERVOS 12
 #define HEX_CHANNEL 0x40
 
 // -------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ Driver driver = Driver(HEX_CHANNEL);
 const char* ssid = "";
 const char* password = "";
 
-AsyncWebServer server(80);
+//AsyncWebServer server(80);
 
 int is_running = 0; 
 int reset_snake = 0;
@@ -54,6 +54,8 @@ double amplitude = 0.0;
 double offset = 0.0;
 double wavelength = 0.0;
 double frequency = 0.0; 
+
+double angles[N_SERVOS - 1] = {0};
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
@@ -237,16 +239,26 @@ void undulated_motion_kinetics_v1() {
   }
 }
 
+double sum_angles() {
+  double su = 0.0;
+  for(int i = 0; i < N_SERVOS - 1; i++) {
+    su += angles[i];    
+  }  
+  return su;
+}
+
 void undulated_motion_kinetics_v2() {
   for(int i = 0; i < 360; i++) {
     float brads = i * 3.1415 / 180.0; 
     
     for(int j = 0; j < N_SERVOS - 1; j++) { // n servo - 1
-      rot = 55 * sin(2 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS - 2));
-      rotate(j, rot);
+      rot = 40 * sin(2 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS - 2));
+      rotate(j, 90 + rot);
       s += rot;
+      angles[j] = rot;
+      delay(10);
+      rotate(N_SERVOS - 1, 90 - sum_angles());
     }
-    rotate(N_SERVOS - 1, 90 - sum);
     s = 0.0;
     delay(10);
   }
@@ -254,14 +266,15 @@ void undulated_motion_kinetics_v2() {
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
-/*
+
 // This function activates the undulated motion of the snake
 void undulated_motion_3() {
   for(int i = 0; i < 360; i++) {
     float brads = i * 3.1415 / 180.0; 
 
     for(int j=0; j<N_SERVOS; j++){  
-      if(reset_snake == 0 || motion_snake != UNDULATED) {
+      rotate(j, 94 + 40 * sin(2 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS))); 
+      /*if(reset_snake == 0 || motion_snake != UNDULATED) {
         while(is_running == 0) {
           if(reset_snake == 1) {
             return;
@@ -278,13 +291,13 @@ void undulated_motion_3() {
 
       } else {
         return;
-      }
+      }*/
     }
 
    delay(10);
   }
 }
-
+/*
 // Updates the mode
 void update_mode(int m) {
   if(m == 0 || m == 1) {
@@ -434,6 +447,7 @@ void setup() {
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
+  undulated_motion_3(); 
 /*
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
