@@ -109,76 +109,132 @@ float trigger_sensor() {
 void inchworm_motion() {
 
   // BACKWARD!!!
-
-  for(int phi = 0; phi <90; ++phi){
-    if(motion_snake == INCHWORM) {
-      while(is_running == 0) {
-        if(motion_snake != INCHWORM) {
-          reset();
-          delay(10);
-          return;
-        }
-      }
-      rotate(0, 90-phi);
-      rotate(1, 90-phi);
-      rotate(2, 90+phi);
-
-      delay(10);
-    } else {
-      reset();
-      delay(10);
-      return;
-    } 
-  }
-
-  for(int i = 0; i <= 4; ++i){
-    for(int phi = 0; phi < 90; ++phi){
-      
+  if(dir_snake == FORWARD){
+    for(int phi = 0; phi <90; ++phi){
       if(motion_snake == INCHWORM) {
-        
         while(is_running == 0) {
           if(motion_snake != INCHWORM) {
             reset();
             delay(10);
             return;
-          }  
+          }
         }
+        rotate(0, 90-phi);
+        rotate(1, 90-phi);
+        rotate(2, 90+phi);
 
-        if(i>0){
-          rotate(i-1, 180-phi);
-        }
-
-        rotate(i, 2*phi);
-        rotate(i+2, 180-2*phi);
-        rotate(i+3, 90+phi);
         delay(10);
+      } else {
+        reset();
+        delay(10);
+        return;
+      } 
+    }
 
+    for(int i = 0; i <= N_SERVOS-4; ++i){
+      for(int phi = 0; phi < 90; ++phi){
+        
+        if(motion_snake == INCHWORM) {
+          
+          while(is_running == 0) {
+            if(motion_snake != INCHWORM) {
+              reset();
+              delay(10);
+              return;
+            }  
+          }
+
+          if(i>0){
+            rotate(i-1, 180-phi);
+          }
+
+          rotate(i, 2*phi);
+          rotate(i+2, 180-2*phi);
+          rotate(i+3, 90+phi);
+          delay(10);
+
+        } else {
+          reset();
+          delay(10);
+          return;
+        }
+      }  
+      delay(speed_inchworm * 1000);
+    }
+    if(dir_snake == BACKWARD){
+            for(int phi = 0; phi <90; ++phi){
+      if(motion_snake == INCHWORM) {
+        while(is_running == 0) {
+          if(motion_snake != INCHWORM) {
+            reset();
+            delay(10);
+            return;
+          }
+        }
+        rotate(0, 90-phi);
+        rotate(1, 90-phi);
+        rotate(2, 90+phi);
+
+        delay(10);
+      } else {
+        reset();
+        delay(10);
+        return;
+      } 
+    }
+
+    for(int i = N_SERVOS-1; i >= 4;--i){
+      for(int phi = 0; phi < 90; ++phi){
+        
+        if(motion_snake == INCHWORM) {
+          
+          while(is_running == 0) {
+            if(motion_snake != INCHWORM) {
+              reset();
+              delay(10);
+              return;
+            }  
+          }
+
+          if(i>0){
+            rotate(i-1, 180-phi);
+          }
+
+          rotate(i, 2*phi);
+          rotate(i+2, 180-2*phi);
+          rotate(i+3, 90+phi);
+          delay(10);
+
+        } else {
+          reset();
+          delay(10);
+          return;
+        }
+      }  
+      delay(speed_inchworm * 1000);
+    }
+ 
+    }  
+  
+    for(int i = N-SERVOS-1; i >= 0; --i) {
+      if(motion_snake == INCHWORM) {
+        while(is_running == 0) {
+          if(motion_snake != INCHWORM) {
+            reset();
+            delay(10);
+            return;
+          }
+        }
+        rotate(i, 90);
+        delay(10);
       } else {
         reset();
         delay(10);
         return;
       }
-    }  
-    delay(speed_inchworm * 1000);
-  }
- 
-  for(int i = 0; i < N_SERVOS; i++) {
-    if(motion_snake == INCHWORM) {
-      while(is_running == 0) {
-        if(motion_snake != INCHWORM) {
-          reset();
-          delay(10);
-          return;
-        }
-      }
-      rotate(i, 90);
-      delay(10);
-    } else {
-      reset();
-      delay(10);
-      return;
     }
   }
+
 }
 
 // -------------------------------------------------------------------------------------
