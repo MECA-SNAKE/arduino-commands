@@ -13,7 +13,7 @@
 // -------------------------------------------------------------------------------------
 // DEFINES
 // -------------------------------------------------------------------------------------
-#define MIN_PULSE_WIDTH 800
+#define MIN_PULSE_WIDTH 850
 #define MAX_PULSE_WIDTH 2000
 #define FREQUENCY_SERVO 50
 
@@ -41,7 +41,7 @@ typedef enum {
 } motion;
 
 typedef enum {
-  FORWARD, BACKWARD, NONE
+  FORWARD, BACKWARD, NO_MOVE
 } direction;
 
 // -------------------------------------------------------------------------------------
@@ -49,14 +49,14 @@ typedef enum {
 // -------------------------------------------------------------------------------------
 Driver driver = Driver(HEX_CHANNEL);
 
-const char* ssid = "";
-const char* password = "";
+const char* ssid = "giogio_larue";
+const char* password = "21ff99a2c0cd";
 
 AsyncWebServer server(80);
 
 int is_running = 0; // 0 -> not running, 1 -> running
 motion motion_snake = NONE;
-direction dir_snake = NONE;
+direction dir_snake = NO_MOVE;
 
 double speed_inchworm = 0.0;
 double amplitude = 0.0;
@@ -87,7 +87,7 @@ int rotate_with_min_max(int servo, double angle) {
 void rotate(int servo, double angle) {
   int value = driver.setPWM(servo, 0, rotate_with_min_max(servo, angle));
 }
-
+/*
 // This function return the distance of the first object in the direction of the sensor
 float trigger_sensor() {
 
@@ -101,7 +101,7 @@ float trigger_sensor() {
   // Calculate the distance
   return pulseIn(echoPin, HIGH) * SOUND_VELOCITY/2;
 }
-
+*/
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 
@@ -114,7 +114,7 @@ void inchworm_motion() {
   for(int phi = 0; phi <90; ++phi){
     if(motion_snake == INCHWORM) {
       while(is_running == 0) {
-        continue;
+        yield();
       }
       rotate(0, 90-phi);
       rotate(1, 90-phi);
@@ -135,7 +135,7 @@ void inchworm_motion() {
       if(motion_snake == INCHWORM) {
         
         while(is_running == 0) {
-          continue;  
+          yield();  
         }
 
         if(i>0){
@@ -160,7 +160,7 @@ void inchworm_motion() {
   for(int i = 0; i < N_SERVOS; i++) {
     if(motion_snake == INCHWORM) {
       while(is_running == 0) {
-        continue; 
+        yield(); 
       }
       rotate(i, 90);
       delay(10);
@@ -214,11 +214,10 @@ void concertina_motion_v1() {
     for(int j = 0; j < N_SERVOS - 2; j++) {
       temp = g * ampf * sin((1 * j * 2 * 3.1415) / (N_SERVOS - 3));
       rotate(j, 90 + temp);
-      angles[j] = temp;
       sum += temp;
     }
     delay(10);
-    rotate(N_SERVOS - 2, 90 + sum)
+    rotate(N_SERVOS - 2, 90 + sum);
     g *= factor;
     sum = 0.0;
   } 
@@ -279,7 +278,7 @@ void concertina_motion_v2() {
 // This function sets the snake in a straight line
 void straight() {
   for(int i = 0; i < N_SERVOS; i++) {
-    delay(10);
+    delay(500);
     rotate(i, 90);
   }
 }
@@ -313,28 +312,36 @@ void undulated_motion_3() {
     float brads = i * 3.1415 / 180.0; 
 
     for(int j=0; j<N_SERVOS; j++){  
+      /*
+      if(j >= 9) {
+         rotate(j, 93 + 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+      } else {
+        rotate(j, 90 + 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
+      }   
+      */
+      
       if(motion_snake == UNDULATED) {
         while(is_running == 0) {
-          continue;
+          if(motion_snake != UNDULATED) return;
         }
-        if(j >= 9) {
-
+       if(j >= 9) {
           if(dir_snake == FORWARD) {
-            rotate(j, 95 + 50 * sin(5 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS))); 
+            rotate(j, 90 + 25 * sin(5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           } else {
-            rotate(j, 95 + 50 * sin(-5 * brads + (1.5 * j * 2 * 3.1415) / (N_SERVOS))); 
+            rotate(j, 90 + 25 * sin(-5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           }  
 
         } else {
           if(dir_snake == FORWARD) {
-            rotate(j, 90 + 50 * sin(5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 25 * sin(5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           } else {
-            rotate(j, 90 + 50 * sin(-5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 25 * sin(-5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           }
+        }  
       } else {
-        delay(2000);
-        straight();
-        delay(2000);
+        Serial.println("reset activated");
+        reset();
+        delay(10);
         return;
       }
     }
@@ -342,13 +349,31 @@ void undulated_motion_3() {
   }
 }
 
-// try another function -> wavlength is 2pi/w where w = 2pi * f with f = 1 here so wavlength of 1
-void undulated_motion_test() {
+// TO TEST -------> make circles !!
+void undulated_cos() {
   for(int i = 0; i < 360; i++) {
+    float brads = i * 3.1415 / 180.0; 
     for(int j=0; j<N_SERVOS; j++){  
-      rotate(j, 90 + 55 * sin(2 * 3.1415 * 1 * i + (j * 2 * 3.1415) / (N_SERVOS - 1))); 
+
+      if(motion_snake == UNDULATED) {
+        while(is_running == 0) {
+          yield();
+        }
+        
+        if(dir_snake == FORWARD) {
+          rotate(j, 90 + 55 * cos(4 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+        } else {
+          rotate(j, 90 + 55 * cos(-4 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+        }  
+
+      } else {
+        Serial.println("reset activated");
+        reset();
+        delay(10);
+        return;
+      }
     }
-   delay(10);
+   delay(7);
   }
 }
 
@@ -404,15 +429,12 @@ void update_motion(motion mo) {
 
 // This function resets the snake
 void reset() {
-  is_running = 0;
-  motion_snake = NONE;
-  dir_snake = NONE;
+  dir_snake = NO_MOVE;
   frequency = DEFAULT_FREQ;
   wavelength = DEFAULT_WL;
   offset = DEFAULT_OFF;  
   amplitude = DEFAULT_AMP;
   speed_inchworm = DEFAULT_SPEED_INCH;
-  straight();
 }
 
 
@@ -437,7 +459,7 @@ void setup() {
   Serial.println("");
   Serial.println("Wifi connected");
   Serial.println(WiFi.localIP());
-
+/*
   server.on("/sensor", HTTP_GET, [](AsyncWebServerRequest *request) {
     if(distance_sensor() >= 4.0) {
       request->send(200, "text/html", "1");
@@ -445,15 +467,14 @@ void setup() {
       // now if it recieves a "1" then it stops sending GET request until we do what?
     }
   });
-  
+  */
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
-      long value = p->value().toInt();
+      int value = p->value().toInt();
+      motion_snake = NONE;
 
-      reset();
-
-      request->send(200, "text/html", "Received value for /mode on the ESP8266");
+      request->send(200, "text/html", "Received value for /reset on the ESP8266");
       // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
     } else {
       request->send(404, "text/html", "Error on /mode POST request"); 
@@ -464,7 +485,7 @@ void setup() {
   server.on("/mode", HTTP_POST, [](AsyncWebServerRequest *request){
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
-      long value = p->value().toInt();
+      int value = p->value().toInt();
 
       update_mode(value);
 
@@ -479,16 +500,13 @@ void setup() {
   server.on("/motion", HTTP_POST, [](AsyncWebServerRequest *request){
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
-      long value = p->value().toInt();
+      int value = p->value().toInt();
 
       if(value == 1) {
-        Serial.println("UNDULATED");
-        update_motion(UNDULATED)
+        update_motion(UNDULATED);
       } else if(value == 0) {
-        Serial.println("CONCERTINA");
         update_motion(CONCERTINA);
-      } else {
-        Serial.println("INCHWORM");
+      } else if(value == 2) {
         update_motion(INCHWORM);
       }
 
@@ -500,37 +518,30 @@ void setup() {
     }
   });
 
-  server.on("/paramsAmpl", HTTP_POST, [](AsyncWebServerRequest *request){
-    
-  });
+  server.on("/params", HTTP_POST, [](AsyncWebServerRequest *request){
+    if(request->hasParam("value", true)) {
+      AsyncWebParameter* p = request->getParam("value", true);
+      double value = p->value().toInt();
 
-  server.on("/paramsFreq", HTTP_POST, [](AsyncWebServerRequest *request){
-    
-  });
+      update_amplitude(value);
 
-  server.on("/paramsWL", HTTP_POST, [](AsyncWebServerRequest *request){
-    
-  });
-
-  server.on("/offset", HTTP_POST, [](AsyncWebServerRequest *request){
-    
-  });
-
-    server.on("/paramsSpeed", HTTP_POST, [](AsyncWebServerRequest *request){
-    
+      request->send(200, "text/html", "Received value for /motion on the ESP8266");
+      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+    } else {
+      request->send(404, "text/html", "Error on /motion POST request"); 
+      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+    }
   });
 
   server.on("/direction", HTTP_POST, [](AsyncWebServerRequest *request){
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
-      long value = p->value().toInt();
+      int value = p->value().toInt();
 
       if(value == 1) {
-        Serial.println("BACKWARD");
-        update_direction(BACKWARD)
-      } else if(value == 0) {
-        Serial.println("FORWARD");
         update_direction(FORWARD);
+      } else if(value == 0) {
+        update_direction(BACKWARD);
       } 
 
       request->send(200, "text/html", "Received value for /mode on the ESP8266");
@@ -560,7 +571,7 @@ void setup() {
 // -------------------------------------------------------------------------------------
 void loop() {
 
-  // WHAT DO WE DO IF WIFI GOES OFF -> STOP THE SNAKE BECAUSE MORE SECURE ? OTHER THING ?
+  // WHAT DO WE DO IF WIFI GOES OFF -> STOP THE SNAKE BECAUSE MORE SECURE ? OTHER THING ?  
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
@@ -578,8 +589,6 @@ void loop() {
     // SEND PACKET TO KNOW THE WIFI IS ON ! WITH SOMETHING GREEN ON THE SCREEN
   }
 
-
-
   if(is_running == 1) {
     switch(motion_snake){
 
@@ -592,13 +601,14 @@ void loop() {
         break;
 
       case NONE:
+        is_running = 0;
+        straight();
         break;  
 
       default:
         break;    
     } 
   }
-
 }
 
 
