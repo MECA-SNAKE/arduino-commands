@@ -20,16 +20,16 @@
 #define N_SERVOS 12
 #define HEX_CHANNEL 0x40
 
-#define DEFAULT_AMP 50.0
-#define DEFAULT_FREQ 2.0
+#define DEFAULT_AMP 40.0
+#define DEFAULT_FREQ 1.0
 #define DEFAULT_OFF 0.0
-#define DEFAULT_WL 2.0
-#define DEFAULT_SPEED_INCH 10
+#define DEFAULT_WL 1.0
+#define DEFAULT_SPEED_INCH 1
 
 #define TRIGGER_PIN = 12
 #define ECHO_PIN = 14
 #define SOUND_VELOCITY 0.034
-#define CM_TO_INCH 0.393701
+#define CM_TO_INCH 0.39370100
 
 // -------------------------------------------------------------------------------------
 // TYPEDEF
@@ -58,11 +58,11 @@ int is_running = 0; // 0 -> not running, 1 -> running
 motion motion_snake = NONE;
 direction dir_snake = NO_MOVE;
 
-double speed_inchworm = 0.0;
-double amplitude = 0.0;
-double offset = 0.0;
-double wavelength = 0.0;
-double frequency = 0.0; 
+double speed_inchworm = DEFAULT_SPEED_INCH;
+double amplitude = DEFAULT_AMP;
+double offset = DEFAULT_OFF;
+double wavelength = DEFAULT_WL;
+double frequency = DEFAULT_FREQ; 
 
 // -------------------------------------------------------------------------------------
 // MAIN FUNCTIONS
@@ -108,13 +108,16 @@ float trigger_sensor() {
 // This function activates the inchworm's motion
 void inchworm_motion() {
 
-  // ROBIN update here for backward and the speed (inchworm_speed variable) the inchworm
-  // handle here the fact that when we change the motion or the direction, we need to return (tomorrow)
+  // BACKWARD!!!
 
   for(int phi = 0; phi <90; ++phi){
     if(motion_snake == INCHWORM) {
       while(is_running == 0) {
-        yield();
+        if(motion_snake != INCHWORM) {
+          reset();
+          delay(10);
+          return;
+        }
       }
       rotate(0, 90-phi);
       rotate(1, 90-phi);
@@ -122,9 +125,8 @@ void inchworm_motion() {
 
       delay(10);
     } else {
-      delay(2000);
-      straight();
-      delay(2000);
+      reset();
+      delay(10);
       return;
     } 
   }
@@ -135,7 +137,11 @@ void inchworm_motion() {
       if(motion_snake == INCHWORM) {
         
         while(is_running == 0) {
-          yield();  
+          if(motion_snake != INCHWORM) {
+            reset();
+            delay(10);
+            return;
+          }  
         }
 
         if(i>0){
@@ -148,26 +154,28 @@ void inchworm_motion() {
         delay(10);
 
       } else {
-        delay(2000);
-        straight();
-        delay(2000);
+        reset();
+        delay(10);
         return;
       }
     }  
-    delay(1000);
+    delay(speed_inchworm * 1000);
   }
  
   for(int i = 0; i < N_SERVOS; i++) {
     if(motion_snake == INCHWORM) {
       while(is_running == 0) {
-        yield(); 
+        if(motion_snake != INCHWORM) {
+          reset();
+          delay(10);
+          return;
+        }
       }
       rotate(i, 90);
       delay(10);
     } else {
-      delay(2000);
-      straight();
-      delay(2000);
+      reset();
+      delay(10);
       return;
     }
   }
@@ -312,34 +320,29 @@ void undulated_motion_3() {
     float brads = i * 3.1415 / 180.0; 
 
     for(int j=0; j<N_SERVOS; j++){  
-      /*
-      if(j >= 9) {
-         rotate(j, 93 + 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
-      } else {
-        rotate(j, 90 + 55 * sin(4 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1)));
-      }   
-      */
-      
       if(motion_snake == UNDULATED) {
         while(is_running == 0) {
-          if(motion_snake != UNDULATED) return;
+          if(motion_snake != UNDULATED) {
+            reset();
+            delay(10);
+            return;
+          }
         }
        if(j >= 9) {
           if(dir_snake == FORWARD) {
-            rotate(j, 90 + 25 * sin(5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 60 * sin(0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           } else {
-            rotate(j, 90 + 25 * sin(-5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 60 * sin(-0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           }  
 
         } else {
           if(dir_snake == FORWARD) {
-            rotate(j, 90 + 25 * sin(5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 60 * sin(0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           } else {
-            rotate(j, 90 + 25 * sin(-5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
+            rotate(j, 90 + 60 * sin(-0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
           }
         }  
       } else {
-        Serial.println("reset activated");
         reset();
         delay(10);
         return;
@@ -357,23 +360,26 @@ void undulated_cos() {
 
       if(motion_snake == UNDULATED) {
         while(is_running == 0) {
-          yield();
+          if(motion_snake != UNDULATED) {
+            reset();
+            delay(10);
+            return;
+          }
         }
         
         if(dir_snake == FORWARD) {
-          rotate(j, 90 + 55 * cos(4 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+          rotate(j, 90 + 55 * cos(0.5 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
         } else {
-          rotate(j, 90 + 55 * cos(-4 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+          rotate(j, 90 + 55 * cos(-0.5 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
         }  
 
       } else {
-        Serial.println("reset activated");
         reset();
         delay(10);
         return;
       }
     }
-   delay(7);
+   delay(10);
   }
 }
 
@@ -391,28 +397,28 @@ void update_mode(int m) {
 
 // Updates the amplitude
 void update_amplitude(double amp) {
-  if(amp >= 0 && amp <= 80) {
+  if(amp >= 20 && amp <= 70) {
     amplitude = amp;
   }
 }
 
 // Updates the wavelength
 void update_wavelength(double wl) {
-  if(wl >= 0 && wl <= 4) {
+  if(wl >= 0 && wl <= 3) {
     wavelength = wl;
   }
 }
 
 // Updates the frequency
 void update_frequency(double f) {
-  if(f >= 0 && f <= 4) {
+  if(f >= 0.5 && f <= 4) {
     frequency = f;
   }
 }
 
 // Updates the offset
 void update_offset(double off) {
-  if(off >= 0 && off <= 20) {
+  if(off >= -10 && off <= 10) {
     offset = off;
   }
 }
@@ -472,13 +478,13 @@ void setup() {
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
       int value = p->value().toInt();
-      motion_snake = NONE;
 
-      request->send(200, "text/html", "Received value for /reset on the ESP8266");
-      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+      if(value == 0) {
+        motion_snake = NONE;
+      }
+      request->send(200, "text/html", "ok reset");
     } else {
-      request->send(404, "text/html", "Error on /mode POST request"); 
-      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+      request->send(404, "text/html", "Error reset"); 
     }
   });
 
@@ -489,11 +495,9 @@ void setup() {
 
       update_mode(value);
 
-      request->send(200, "text/html", "Received value for /mode on the ESP8266");
-      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+      request->send(200, "text/html", "ok mode");
     } else {
-      request->send(404, "text/html", "Error on /mode POST request"); 
-      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+      request->send(404, "text/html", "Error mode"); 
     }
   });
 
@@ -510,26 +514,66 @@ void setup() {
         update_motion(INCHWORM);
       }
 
-      request->send(200, "text/html", "Received value for /motion on the ESP8266");
-      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+      request->send(200, "text/html", "ok motion");
     } else {
-      request->send(404, "text/html", "Error on /motion POST request"); 
-      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+      request->send(404, "text/html", "Error motion"); 
     }
   });
 
   server.on("/params", HTTP_POST, [](AsyncWebServerRequest *request){
-    if(request->hasParam("value", true)) {
+    if(request->hasParam("amp", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
       double value = p->value().toInt();
-
       update_amplitude(value);
-
-      request->send(200, "text/html", "Received value for /motion on the ESP8266");
-      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+      request->send(200, "text/html", "ok amp");
+      return;
     } else {
-      request->send(404, "text/html", "Error on /motion POST request"); 
-      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+      request->send(404, "text/html", "Error amp"); 
+      return;
+    }
+
+    if(request->hasParam("wl", true)) {
+      AsyncWebParameter* p = request->getParam("wl", true);
+      double value = p->value().toInt();
+      update_wavelength(value);
+      request->send(200, "text/html", "ok wl");
+      return;
+    } else {
+      request->send(404, "text/html", "Error wl"); 
+      return;
+    }
+
+    if(request->hasParam("freq", true)) {
+      AsyncWebParameter* p = request->getParam("freq", true);
+      double value = p->value().toInt();
+      update_frequency(value);
+      request->send(200, "text/html", "ok freq");
+      return;
+    } else {
+      request->send(404, "text/html", "Error freq"); 
+      return;
+    }
+
+    if(request->hasParam("speed", true)) {
+      AsyncWebParameter* p = request->getParam("speed", true);
+      double value = p->value().toInt();
+      update_speed_inchworm(value);
+      request->send(200, "text/html", "ok speed");
+      return;
+    } else {
+      request->send(404, "text/html", "Error speed"); 
+      return;
+    }
+
+    if(request->hasParam("offset", true)) {
+      AsyncWebParameter* p = request->getParam("offset", true);
+      double value = p->value().toInt();
+      update_offset(value);
+      request->send(200, "text/html", "ok offset");
+      return;
+    } else {
+      request->send(404, "text/html", "Error offset"); 
+      return;
     }
   });
 
@@ -544,11 +588,9 @@ void setup() {
         update_direction(BACKWARD);
       } 
 
-      request->send(200, "text/html", "Received value for /mode on the ESP8266");
-      // FAIRE EN SORTE D'AVOIR UN PETIT LOGO VERT QUI DIT QUE TANT QUE JE RECOIS CETTE RESPONSE C'EST GOOD
+      request->send(200, "text/html", "ok direction");
     } else {
-      request->send(404, "text/html", "Error on /mode POST request"); 
-      // TRAITER L'ERREUR EST AFFICHER SUR LE TEL EN ROUGE -> PROBLEME DE L'APP AVEC LES REQUETES
+      request->send(404, "text/html", "Error direction"); 
     }
   });
 
