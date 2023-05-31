@@ -13,8 +13,8 @@
 // -------------------------------------------------------------------------------------
 // DEFINES
 // -------------------------------------------------------------------------------------
-#define MIN_PULSE_WIDTH 850
-#define MAX_PULSE_WIDTH 2000
+#define MIN_PULSE_WIDTH 800 // best 895
+#define MAX_PULSE_WIDTH 2000 // best 2095
 #define FREQUENCY_SERVO 50
 
 #define N_SERVOS 12
@@ -26,8 +26,8 @@
 #define DEFAULT_WL 1.0
 #define DEFAULT_SPEED_INCH 1
 
-#define TRIGGER_PIN = 12
-#define ECHO_PIN = 14
+#define TRIGGER_PIN 12
+#define ECHO_PIN 14
 #define SOUND_VELOCITY 0.034
 #define CM_TO_INCH 0.39370100
 
@@ -74,7 +74,12 @@ double frequency = DEFAULT_FREQ;
 // This function rotates a specific servo of an certain angle
 int rotate_with_min_max(int servo, double angle) {
 
-  int pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  int pulse_wide = 0;
+  if(servo == N_SERVOS - 1) {
+    pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH + 100);
+  } else {
+    pulse_wide = map(angle, 0, 180, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
+  }
 
   int al = int(float(pulse_wide) / 1000000 * FREQUENCY_SERVO * 4096);
   return al;
@@ -89,17 +94,17 @@ void rotate(int servo, double angle) {
 }
 /*
 // This function return the distance of the first object in the direction of the sensor
-float trigger_sensor() {
+float distance_sensor() {
 
-  digitalWrite(trigPin, LOW);
+  digitalWrite(TRIGGER_PIN, LOW);
   delayMicroseconds(2);
 
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(TRIGGER_PIN, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
+  digitalWrite(TRIGGER_PIN, LOW);
   
   // Calculate the distance
-  return pulseIn(echoPin, HIGH) * SOUND_VELOCITY/2;
+  return pulseIn(ECHO_PIN, HIGH) * SOUND_VELOCITY/2;
 }
 */
 // -------------------------------------------------------------------------------------
@@ -108,231 +113,162 @@ float trigger_sensor() {
 // This function activates the inchworm's motion
 void inchworm_motion() {
 
-  // BACKWARD!!!
-  if(dir_snake == FORWARD){
-    for(int phi = 0; phi <90; ++phi){
-      if(motion_snake == INCHWORM) {
-        while(is_running == 0) {
-          if(motion_snake != INCHWORM) {
-            reset();
-            delay(10);
-            return;
-          }
-        }
-        rotate(0, 90-phi);
-        rotate(1, 90-phi);
-        rotate(2, 90+phi);
-
-        delay(10);
-      } else {
-        reset();
-        delay(10);
-        return;
-      } 
-    }
-
-    for(int i = 0; i <= N_SERVOS-4; ++i){
-      for(int phi = 0; phi < 90; ++phi){
-        
-        if(motion_snake == INCHWORM) {
-          
-          while(is_running == 0) {
-            if(motion_snake != INCHWORM) {
-              reset();
-              delay(10);
-              return;
-            }  
-          }
-
-          if(i>0){
-            rotate(i-1, 180-phi);
-          }
-
-          rotate(i, 2*phi);
-          rotate(i+2, 180-2*phi);
-          rotate(i+3, 90+phi);
-          delay(10);
-
-        } else {
+  for(int phi = 0; phi <90; ++phi){
+    if(motion_snake == INCHWORM) {
+      while(is_running == 0) {
+        if(motion_snake != INCHWORM) {
           reset();
           delay(10);
           return;
         }
-      }  
-      delay(speed_inchworm * 1000);
-    }
-    if(dir_snake == BACKWARD){
-            for(int phi = 0; phi <90; ++phi){
+      }
+      rotate(0, 90-phi);
+      rotate(1, 90-phi);
+      rotate(2, 90+phi);
+
+      delay(10);
+    } else {
+      reset();
+      delay(10);
+      return;
+    } 
+  }
+
+  for(int i = 0; i <= N_SERVOS-4; ++i){
+    for(int phi = 0; phi < 90; ++phi){
+      
       if(motion_snake == INCHWORM) {
-        while(is_running == 0) {
-          if(motion_snake != INCHWORM) {
-            reset();
-            delay(10);
-            return;
-          }
-        }
-        rotate(0, 90-phi);
-        rotate(1, 90-phi);
-        rotate(2, 90+phi);
-
-        delay(10);
-      } else {
-        reset();
-        delay(10);
-        return;
-      } 
-    }
-
-    for(int i = N_SERVOS-1; i >= 4;--i){
-      for(int phi = 0; phi < 90; ++phi){
         
-        if(motion_snake == INCHWORM) {
-          
-          while(is_running == 0) {
-            if(motion_snake != INCHWORM) {
-              reset();
-              delay(10);
-              return;
-            }  
-          }
-
-          if(i>0){
-            rotate(i-1, 180-phi);
-          }
-
-          rotate(i, 2*phi);
-          rotate(i+2, 180-2*phi);
-          rotate(i+3, 90+phi);
-          delay(10);
-
-        } else {
-          reset();
-          delay(10);
-          return;
-        }
-      }  
-      delay(speed_inchworm * 1000);
-    }
- 
-    }  
-  
-    for(int i = N-SERVOS-1; i >= 0; --i) {
-      if(motion_snake == INCHWORM) {
         while(is_running == 0) {
           if(motion_snake != INCHWORM) {
             reset();
             delay(10);
             return;
-          }
+          }  
         }
-        rotate(i, 90);
+
+        if(i>0){
+          rotate(i-1, 180-phi);
+        }
+
+        rotate(i, 2*phi);
+        rotate(i+2, 180-2*phi);
+        rotate(i+3, 90+phi);
         delay(10);
+
       } else {
         reset();
         delay(10);
         return;
       }
-    }
-  }
-
-}
-
-// -------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
-
-// NEED TO BE TESTED
-float g = 1.0;
-float temp = 0.0;
-float sum = 0.0;
-float factor = 0.0;
-float amp = 2.0;
-float ampf = 80.0;
-float st = 150.0;
-
-float test(float a, float a_f, float s) {
-    return pow(a_f / a, 1 / s);
-}    
-
-// WANT TO KNOW AS BELOW WHY NOT WORK
-// NOT TEST WITH REACT APP BECAUSE NO CONTROL OF RUNNING AND SO ON
-void concertina_motion_v1() {
-  g = 1.0;
-  factor = test(amp, ampf, st);
-
-  for(int i = 0; i < 150; i++) {
-    for(int j = 0; j < N_SERVOS - 2; j++) {
-      temp = g * amp * sin((1 * j * 2 * 3.1415) / (N_SERVOS - 3));
-      rotate(j, 90 + temp);
-      sum += temp;
-    }
-    delay(10);
-    rotate(N_SERVOS - 2, 90 + sum);
-    g *= factor;
-    sum = 0.0;
-  } 
-
-  g = 1.0;
-  factor = test(ampf, amp, 50.0);
-
-  for(int i = 0; i < 50; i++) {
-    for(int j = 0; j < N_SERVOS - 2; j++) {
-      temp = g * ampf * sin((1 * j * 2 * 3.1415) / (N_SERVOS - 3));
-      rotate(j, 90 + temp);
-      sum += temp;
-    }
-    delay(10);
-    rotate(N_SERVOS - 2, 90 + sum);
-    g *= factor;
-    sum = 0.0;
+    }  
+    delay(1000 / speed_inchworm);
   } 
 }
 
-// TO TEST BUT NOT WITH REACT APP BECAUSE NO TEST ON RUNNING AND SO ON
-void concertina_motion_v2() {
+int even = 1;
 
-  // first step
-  for(int i = 0; i < 100; i++) {
+void concertina_motion() {
+
+  if(even == 1) {
     for(int phi = 0; phi <= 90; phi++) {
-      rotate(0, 90 - phi);
-      rotate(2, 90 + phi);
-      rotate(3, 90 + phi);
-      rotate(6, 90 - phi);
-      rotate(7, 90 - phi);
+     
+      rotate(11, 90 - phi);
+      rotate(10, 90 + phi);
       rotate(9, 90 + phi);
-      delay(10);
-    }
-    delay(10);
-  }
+      rotate(7, 90 - phi);
+      rotate(6, 90 - phi);
+      rotate(5, 90 + phi);
+      delay(5);
+    } 
 
-  //second step
-  for(int i = 0; i < 100; i++) {
+    delay(100);
+
+
     for(int phi = 0; phi <= 90; phi++) {
-      rotate(0, phi);
-      rotate(2, 180 - phi);
-      rotate(3, 180 - phi);
+      rotate(5, 180 - phi);
+      rotate(4, 90 + phi);
+      rotate(3, 90 + phi);
+      rotate(1, 90 - phi);
+      rotate(0, 90 - phi);
+      delay(30);
+    }
+
+    delay(100);
+
+    for(int phi = 0; phi <= 90; phi++) {
       rotate(5, 90 - phi);
-      rotate(6, 2*phi);
-      rotate(7, 2*phi);
-      rotate(9, 2*(90 - phi));
-      rotate(10, 90 - phi);
-      rotate(11, 90 + phi);
-      delay(10);
-    }
-    delay(10);
-  }  
+      rotate(6, phi);
+      rotate(7, phi);
+      rotate(9, 180 - phi);
+      rotate(10, 180 - phi);
+      rotate(11, phi);
+      delay(5);
+    }  
 
-  // third step
-  for(int i = 0; i < 100; i++) {
+    delay(100);
+
+
+    for(int phi = 0; phi <= 90; phi++) { 
+      rotate(0, 180 - phi);
+      rotate(1, 180 - phi);
+      rotate(3, phi);
+      rotate(4, phi);
+      rotate(5, phi + 10);
+      delay(5);
+    }
+
+    delay(100);
+
+  } else {
     for(int phi = 0; phi <= 90; phi++) {
+
+      rotate(11, 90 + phi);
+      rotate(10, 90 - phi);
+      rotate(9, 90 - phi);
+      rotate(7, 90 + phi);
+      rotate(6, 90 + phi);
+      rotate(5, 90 - phi);
+      delay(5);
+    }  
+
+    delay(100);
+
+    for(int phi = 0; phi <= 90; phi++) {      
       rotate(5, phi);
+      rotate(4, 90 - phi);
+      rotate(3, 90 - phi);
+      rotate(1, 90 + phi);
+      rotate(0, 90 + phi);
+      delay(30);
+    }  
+
+
+    delay(100);
+
+    for(int phi = 0; phi <= 90; phi++) {
+      rotate(5, 90 + phi);
       rotate(6, 180 - phi);
       rotate(7, 180 - phi);
       rotate(9, phi);
       rotate(10, phi);
       rotate(11, 180 - phi);
-      delay(10);
+      delay(5);
+    
     }
-    delay(10);
+
+    delay(100);
+
+    for(int phi = 0; phi <= 90; phi++) {
+      rotate(0, phi);
+      rotate(1, phi);
+      rotate(3, 180 - phi);
+      rotate(4, 180 - phi);
+      rotate(5, 180 - phi);
+      delay(5);
+    }
+
+    delay(100);
   }
 }
 
@@ -349,89 +285,31 @@ void straight() {
 
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
-double rot = 0.0;
-
-// WANT TO KNOW WHY NOT THE HEAD MOVING FUCK THIS SHIT IT'S NORMAL PIECE OF CODE FUUUUCK
-void undulated_motion_kinetics_v2() {
-  for(int i = 0; i < 360; i++) {
-    float brads = i * 3.1415 / 180.0; 
-    
-    for(int j = 0; j < N_SERVOS - 1; j++) { // n servo - 1
-      rot = 55 * sin(2 * brads + (2 * j * 2 * 3.1415) / (N_SERVOS - 1));
-      rotate(j, 90 + rot);
-      sum += rot;
-    }
-    delay(10);
-    rotate(N_SERVOS - 1, 90 + sum);
-    sum = 0.0;
-  }
-}
-
-// -------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------
 
 // This function activates the undulated motion of the snake
-void undulated_motion_3() {
+void undulated_motion() {
   for(int i = 0; i < 360; i++) {
+  
     float brads = i * 3.1415 / 180.0; 
 
     for(int j=0; j<N_SERVOS; j++){  
+      
       if(motion_snake == UNDULATED) {
         while(is_running == 0) {
           if(motion_snake != UNDULATED) {
             reset();
-            delay(10);
             return;
+          } else {
+            continue;
           }
         }
-       if(j >= 9) {
-          if(dir_snake == FORWARD) {
-            rotate(j, 90 + 60 * sin(0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
-          } else {
-            rotate(j, 90 + 60 * sin(-0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
-          }  
-
-        } else {
-          if(dir_snake == FORWARD) {
-            rotate(j, 90 + 60 * sin(0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
-          } else {
-            rotate(j, 90 + 60 * sin(-0.5 * brads + (1 * j * 2 * 3.1415) / (N_SERVOS - 1))); 
-          }
-        }  
-      } else {
-        reset();
-        delay(10);
-        return;
-      }
-    }
-   delay(10);
-  }
-}
-
-// TO TEST -------> make circles !!
-void undulated_cos() {
-  for(int i = 0; i < 360; i++) {
-    float brads = i * 3.1415 / 180.0; 
-    for(int j=0; j<N_SERVOS; j++){  
-
-      if(motion_snake == UNDULATED) {
-        while(is_running == 0) {
-          if(motion_snake != UNDULATED) {
-            reset();
-            delay(10);
-            return;
-          }
-        }
-        
         if(dir_snake == FORWARD) {
-          rotate(j, 90 + 55 * cos(0.5 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+          rotate(j, 90 + offset + amplitude * sin(frequency * brads + (wavelength * j * 2 * 3.1415) / (N_SERVOS - 1)));
         } else {
-          rotate(j, 90 + 55 * cos(-0.5 * brads + (((j - 5) * 2 * 3.1415 / (N_SERVOS - 1))))); 
+          rotate(j, 90 + offset + amplitude * sin(-frequency * brads + (wavelength * j * 2 * 3.1415) / (N_SERVOS - 1))); 
         }  
-
       } else {
         reset();
-        delay(10);
         return;
       }
     }
@@ -446,9 +324,7 @@ void update_speed_inchworm(double s) {
 
 // Updates the mode (0 -> stop, 1 -> start)
 void update_mode(int m) {
-  if(m == 0 || m == 1) {
-    is_running = m;
-  }
+  is_running = m;
 }
 
 // Updates the amplitude
@@ -467,7 +343,7 @@ void update_wavelength(double wl) {
 
 // Updates the frequency
 void update_frequency(double f) {
-  if(f >= 0.5 && f <= 4) {
+  if(f >= 0.5 && f <= 12) {
     frequency = f;
   }
 }
@@ -487,6 +363,10 @@ void update_direction(direction d) {
 
 void update_motion(motion mo) {
   motion_snake = mo;
+
+  if(mo == CONCERTINA || mo == INCHWORM) {
+    dir_snake = FORWARD;
+  }
 }
 
 // This function resets the snake
@@ -497,6 +377,7 @@ void reset() {
   offset = DEFAULT_OFF;  
   amplitude = DEFAULT_AMP;
   speed_inchworm = DEFAULT_SPEED_INCH;
+  straight();
 }
 
 
@@ -506,7 +387,7 @@ void reset() {
 void setup() {  
 
   Serial.begin(9600); 
-  Serial.println("Initialize System");
+  Serial.println("INIT SNAKE FLIPPER");
 
   Serial.print("WIFI ...");
   WiFi.begin(ssid, password);
@@ -521,15 +402,8 @@ void setup() {
   Serial.println("");
   Serial.println("Wifi connected");
   Serial.println(WiFi.localIP());
-/*
-  server.on("/sensor", HTTP_GET, [](AsyncWebServerRequest *request) {
-    if(distance_sensor() >= 4.0) {
-      request->send(200, "text/html", "1");
 
-      // now if it recieves a "1" then it stops sending GET request until we do what?
-    }
-  });
-  */
+  
   server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request) {
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
@@ -538,7 +412,7 @@ void setup() {
       if(value == 0) {
         motion_snake = NONE;
       }
-      request->send(200, "text/html", "ok reset");
+      request->send(200, "text/html", "good"); 
     } else {
       request->send(404, "text/html", "Error reset"); 
     }
@@ -550,8 +424,8 @@ void setup() {
       int value = p->value().toInt();
 
       update_mode(value);
+      request->send(200, "text/html", "good"); 
 
-      request->send(200, "text/html", "ok mode");
     } else {
       request->send(404, "text/html", "Error mode"); 
     }
@@ -569,8 +443,7 @@ void setup() {
       } else if(value == 2) {
         update_motion(INCHWORM);
       }
-
-      request->send(200, "text/html", "ok motion");
+      request->send(200, "text/html", "good"); 
     } else {
       request->send(404, "text/html", "Error motion"); 
     }
@@ -578,62 +451,61 @@ void setup() {
 
   server.on("/params", HTTP_POST, [](AsyncWebServerRequest *request){
     if(request->hasParam("amp", true)) {
-      AsyncWebParameter* p = request->getParam("value", true);
+      AsyncWebParameter* p = request->getParam("amp", true);
       double value = p->value().toInt();
       update_amplitude(value);
-      request->send(200, "text/html", "ok amp");
-      return;
-    } else {
-      request->send(404, "text/html", "Error amp"); 
-      return;
-    }
 
-    if(request->hasParam("wl", true)) {
+      request->send(200, "text/html", "good"); 
+
+    } else if(request->hasParam("wl", true)) {
       AsyncWebParameter* p = request->getParam("wl", true);
       double value = p->value().toInt();
       update_wavelength(value);
-      request->send(200, "text/html", "ok wl");
-      return;
-    } else {
-      request->send(404, "text/html", "Error wl"); 
-      return;
-    }
 
-    if(request->hasParam("freq", true)) {
+      request->send(200, "text/html", "good"); 
+
+    } else if(request->hasParam("freq", true)) {
       AsyncWebParameter* p = request->getParam("freq", true);
       double value = p->value().toInt();
       update_frequency(value);
-      request->send(200, "text/html", "ok freq");
-      return;
-    } else {
-      request->send(404, "text/html", "Error freq"); 
-      return;
-    }
 
-    if(request->hasParam("speed", true)) {
+      request->send(200, "text/html", "good"); 
+
+    } else if(request->hasParam("speed", true)) {
       AsyncWebParameter* p = request->getParam("speed", true);
       double value = p->value().toInt();
       update_speed_inchworm(value);
-      request->send(200, "text/html", "ok speed");
-      return;
-    } else {
-      request->send(404, "text/html", "Error speed"); 
-      return;
-    }
 
-    if(request->hasParam("offset", true)) {
+      request->send(200, "text/html", "good"); 
+
+    } else if(request->hasParam("offset", true)) {
       AsyncWebParameter* p = request->getParam("offset", true);
       double value = p->value().toInt();
       update_offset(value);
-      request->send(200, "text/html", "ok offset");
-      return;
+
+      request->send(200, "text/html", "good"); 
+
+    } else if(request->hasParam("off", true)) {
+      AsyncWebParameter* p = request->getParam("off", true);
+      double value = p->value().toInt();
+
+      int off = 0;
+      if(value <= 180) {
+        off = map(value, 0, 180, -11, 11);
+        if(off != offset) {
+          update_offset(off);
+        }
+        request->send(200, "text/html", String(off)); 
+      } else {
+        request->send(200, "text/html", "nothing"); 
+      }
     } else {
-      request->send(404, "text/html", "Error offset"); 
-      return;
+      request->send(404, "text/html", "baaaaaaaaaad"); 
     }
   });
 
   server.on("/direction", HTTP_POST, [](AsyncWebServerRequest *request){
+        
     if(request->hasParam("value", true)) {
       AsyncWebParameter* p = request->getParam("value", true);
       int value = p->value().toInt();
@@ -660,20 +532,15 @@ void setup() {
   straight();
 
   delay(2000);
-  //pinMode(TRIGGER_PIN, OUTPUT); // Sets the trigPin as an Output
-  //pinMode(ECHO_PIN, INPUT); // Sets the echoPin as an Input
 }
 
 // -------------------------------------------------------------------------------------
 // LOOP FUNCTION
 // -------------------------------------------------------------------------------------
 void loop() {
-
-  // WHAT DO WE DO IF WIFI GOES OFF -> STOP THE SNAKE BECAUSE MORE SECURE ? OTHER THING ?  
-
+  
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Wifi disconnected");
-      // SEND PACKET TO KNOW THE WIFI IS OFF ! WITH SOMETHING RED ON THE SCREEN
     WiFi.disconnect();
     delay(1000);
     WiFi.begin(ssid, password);
@@ -684,29 +551,37 @@ void loop() {
     Serial.println("");
     Serial.println("Wifi reconnected");
     server.begin();
-    // SEND PACKET TO KNOW THE WIFI IS ON ! WITH SOMETHING GREEN ON THE SCREEN
   }
 
   if(is_running == 1) {
     switch(motion_snake){
+
+      case CONCERTINA:
+        concertina_motion();
+        if(even == 1) {
+          even = 0;
+        } else {
+          even = 1;
+        }
+        break;
 
       case INCHWORM:
         inchworm_motion();
         break;
 
       case UNDULATED:
-        undulated_motion_3();
+        undulated_motion();
         break;
 
       case NONE:
         is_running = 0;
-        straight();
         break;  
 
       default:
         break;    
     } 
-  }
+  } 
+ 
 }
 
 
